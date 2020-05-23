@@ -1,0 +1,38 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    font-family: Helvetica, Arial, sans-serif;
+  }
+  
+  h1 {
+    
+  }
+  
+  canvas {
+    display: block;
+  }
+  
+  #canvas-container {
+    float: left;
+  }
+  
+  #config-container {
+    float: left;
+    padding-left: 10px;
+  }
+  
+  fieldset {
+    border: none;
+    margin: 0;
+    padding: 0;
+  }
+  
+  label {
+    display: block;
+  }
+  
+  div.label {
+    width: 250px;
+    display: inline-block;
+  }
+  
