@@ -31,7 +31,7 @@ class Ball {
 
   initState() {
     if (occurs(this.settings.probHereditaryImmunity)) {
-      this.inoculate();
+      this.makeImmune();
     } else {
       this.makeSusceptible();
     }
@@ -98,7 +98,7 @@ class Ball {
     );
   }
 
-  inoculate() {
+  makeImmune() {
     this.state = 'hereditaryImmunity';
     this.color = this.colors.hereditaryImmunity;
   }
