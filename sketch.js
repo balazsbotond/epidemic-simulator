@@ -21,8 +21,8 @@ let cycle = 0;
 
 const colors = {
   deceased: 'rgb(0, 0, 0)',
-  recovered: 'rgb(128, 128, 255)',
-  immune: 'rgb(210, 210, 210)',
+  acquiredImmunity: 'rgb(128, 128, 255)',
+  hereditaryImmunity: 'rgb(172, 128, 255)',
   susceptible: 'rgb(125, 199, 125)',
   infected: 'rgb(255, 128, 128)',
   background: 'rgb(255, 255, 255)'
@@ -30,31 +30,31 @@ const colors = {
 
 const chartColors = [
   colors.deceased,
-  colors.recovered,
-  colors.immune,
+  colors.acquiredImmunity,
+  colors.hereditaryImmunity,
   colors.susceptible,
   colors.infected
 ];
 
 const labels = [
-  { color: chartColors[0], label: 'deceased' },
-  { color: chartColors[1], label: 'recovered' },
-  { color: chartColors[2], label: 'immune' },
-  { color: chartColors[3], label: 'susceptible' },
-  { color: chartColors[4], label: 'infected' },
+  { color: colors.deceased, label: 'deceased' },
+  { color: colors.acquiredImmunity, label: 'acq. immunity' },
+  { color: colors.hereditaryImmunity, label: 'her. immunity' },
+  { color: colors.susceptible, label: 'susceptible' },
+  { color: colors.infected, label: 'infected' },
 ];
 
 const settings = {
   population: 920,
   infectionDistance: 30,
   probStationary: 0.0,
-  probImmune: 0.0,
+  probHereditaryImmunity: 0.0,
   probDeath: 0.1,
   probInfection: 0.1,
   recoveryTime: 300,
-  recoveryTimeSpread: 60,
-  immunityTime: 200,
-  immunityTimeSpread: 100,
+  recoveryTimeRange: 60,
+  acquiredImmunityTime: 200,
+  acquiredImmunityTimeRange: 100,
   showInfectionDistance: true,
   drawBorders: true,
   speed: 1
@@ -84,17 +84,6 @@ function draw() {
   cycle = (cycle + 1) % settings.speed;
 }
 
-function buildQuadTree() {
-  const boundary = new Rectangle(0, 0, w, h - chartHeight);
-  const qtree = new QuadTree(boundary, 4);
-
-  for (const ball of balls) {
-    qtree.insert(new Point(ball.pos.x, ball.pos.y, ball));
-  }
-
-  return qtree;
-}
-
 function updateBalls(shouldDraw) {
   const qtree = buildQuadTree();
 
@@ -121,27 +110,38 @@ function updateGui() {
   controlGui.setValue('FPS', floor(frameRate()));
 }
 
+function buildQuadTree() {
+  const boundary = new Rectangle(0, 0, w, h - chartHeight);
+  const qtree = new QuadTree(boundary, 4);
+
+  for (const ball of balls) {
+    qtree.insert(new Point(ball.pos.x, ball.pos.y, ball));
+  }
+
+  return qtree;
+}
+
 function getStats() {
   return [
     countStates(balls, 'deceased'),
-    countStates(balls, 'recovered'),
-    countStates(balls, 'immune'),
+    countStates(balls, 'acquiredImmunity'),
+    countStates(balls, 'hereditaryImmunity'),
     countStates(balls, 'susceptible'),
     countStates(balls, 'infected'),
   ];
 }
 
 function startSimulation() {
-  initSimulation();
   controlGui.hideControl('Start');
   controlGui.showControl('Stop');
   paramGui.hideControl('population');
   paramGui.hideControl('probStationary');
-  paramGui.hideControl('probImmune');
+  paramGui.hideControl('probHereditaryImmunity');
   paramGui.hideControl('recoveryTime');
-  paramGui.hideControl('recoveryTimeSpread');
-  paramGui.hideControl('immunityTime');
-  paramGui.hideControl('immunityTimeSpread');
+  paramGui.hideControl('recoveryTimeRange');
+  paramGui.hideControl('acquiredImmunityTime');
+  paramGui.hideControl('acquiredImmunityTimeRange');
+  initSimulation();
   running = true;
 }
 
@@ -150,11 +150,11 @@ function stopSimulation() {
   controlGui.showControl('Start');
   paramGui.showControl('population');
   paramGui.showControl('probStationary');
-  paramGui.showControl('probImmune');
+  paramGui.showControl('probHereditaryImmunity');
   paramGui.showControl('recoveryTime');
-  paramGui.showControl('recoveryTimeSpread');
-  paramGui.showControl('immunityTime');
-  paramGui.showControl('immunityTimeSpread');
+  paramGui.showControl('recoveryTimeRange');
+  paramGui.showControl('acquiredImmunityTime');
+  paramGui.showControl('acquiredImmunityTimeRange');
   running = false;
 }
 
@@ -194,13 +194,13 @@ function initGui() {
   paramGui.bindRange('population', 1, 2000, settings.population, 1, settings);
   paramGui.bindRange('infectionDistance', 5, 50, settings.infectionDistance, 1, settings);
   paramGui.bindRange('probStationary', 0, 1, settings.probStationary, 0.1, settings);
-  paramGui.bindRange('probImmune', 0, 1, settings.probImmune, 0.1, settings);
+  paramGui.bindRange('probHereditaryImmunity', 0, 1, settings.probHereditaryImmunity, 0.1, settings);
   paramGui.bindRange('probDeath', 0, 1, settings.probDeath, 0.1, settings);
   paramGui.bindRange('probInfection', 0, 1, settings.probInfection, 0.1, settings);
   paramGui.bindRange('recoveryTime', 1, 1000, settings.recoveryTime, 1, settings);
-  paramGui.bindRange('recoveryTimeSpread', 1, 1000, settings.recoveryTimeSpread, 1, settings);
-  paramGui.bindRange('immunityTime', 1, 5000, settings.immunityTime, 1, settings);
-  paramGui.bindRange('immunityTimeSpread', 1, 1000, settings.immunityTimeSpread, 1, settings);
+  paramGui.bindRange('recoveryTimeRange', 1, 1000, settings.recoveryTimeRange, 1, settings);
+  paramGui.bindRange('acquiredImmunityTime', 1, 5000, settings.acquiredImmunityTime, 1, settings);
+  paramGui.bindRange('acquiredImmunityTimeRange', 1, 1000, settings.acquiredImmunityTimeRange, 1, settings);
   paramGui.saveInLocalStorage('epidemic-simulator-parameters');
 
   // prevent clicks from propagating to the canvas

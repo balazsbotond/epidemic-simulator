@@ -13,16 +13,18 @@ class Ball {
       ? createVector(random(-2, 2), random(-2, 2))
       : createVector(0, 0);
 
-    if (random(0, 1) > this.settings.probImmune) {
+    if (random(0, 1) > this.settings.probHereditaryImmunity) {
       this.makeSusceptible()
     } else {
       this.inoculate();
     }
 
-    this.recoveryTime = floor(random(this.settings.recoveryTime, this.settings.recoveryTime + this.settings.recoveryTimeSpread));
-    this.timeUntilRecovery = this.recoveryTime;
-    this.immunityTime = floor(random(this.settings.immunityTime, this.settings.immunityTime + this.settings.immunityTimeSpread));
-    this.timeUntilSusceptible = this.immunityTime;
+    const recoveryTime = randomIntWithRange(this.settings.recoveryTime, this.settings.recoveryTimeRange);
+    this.infectionCountdown = new Countdown(recoveryTime, () => this.onRecovery());
+
+    const acquiredacquiredImmunityTime = randomIntWithRange(this.settings.acquiredImmunityTime, this.settings.acquiredImmunityTimeRange);
+    this.acquiredImmunityCountdown = new Countdown(recoveryTime, () => this.onLossOfAcquiredImmunity());
+
     this.contacts = [];
   }
   
@@ -39,35 +41,26 @@ class Ball {
       this.vel.y *= -1;
     }
     if (this.state === 'infected') {
-      this.timeUntilRecovery--;
-      if (this.timeUntilRecovery === 0) {
-        if (random(0, 1) < this.settings.probDeath) {
-          this.kill();
-        } else {
-          this.recover();
-        }
-      }
+      this.infectionCountdown.update();
     }
-    if (this.state === 'recovered') {
-      this.timeUntilSusceptible--;
-      if (this.timeUntilSusceptible === 0) {
-        this.makeSusceptible();
-        this.timeUntilRecovery = this.recoveryTime;
-        this.timeUntilSusceptible = this.immunityTime;
-      }
+    if (this.state === 'acquiredImmunity') {
+      this.acquiredImmunityCountdown.update();
     }
     this.pos.add(this.vel);
   }
 
   draw() {
     noStroke();
+
     if (this.settings.drawBorders) {
       fill(0);
       circle(this.pos.x, this.pos.y, this.radius + 2); // faster than using stroke
     }
+
     if (this.state === 'infected') {
       this.drawInfectionDistance();
     }
+
     fill(this.color);
     circle(this.pos.x, this.pos.y, ballRadius);
   }
@@ -86,24 +79,26 @@ class Ball {
       this.pos.y,
       this.settings.infectionDistance,
       this.settings.infectionDistance,
-      map(this.timeUntilRecovery, 0, this.recoveryTime, TWO_PI, 0),
+      map(this.infectionCountdown.current, 0, this.infectionCountdown.from, TWO_PI, 0),
       0
     );
   }
 
   inoculate() {
-    this.state = 'immune';
-    this.color = this.colors.immune;
+    this.state = 'hereditaryImmunity';
+    this.color = this.colors.hereditaryImmunity;
   }
 
   infect() {
     this.state = 'infected';
     this.color = this.colors.infected;
+    this.infectionCountdown.reset();
   }
 
   recover() {
-    this.state = 'recovered';
-    this.color = this.colors.recovered;
+    this.state = 'acquiredImmunity';
+    this.color = this.colors.acquiredImmunity;
+    this.acquiredImmunityCountdown.reset();
   }
 
   makeSusceptible() {
@@ -135,4 +130,24 @@ class Ball {
 
     this.contacts = newContacts;
   }
+
+  onRecovery() {
+    if (random(0, 1) < this.settings.probDeath) {
+      this.kill();
+    } else {
+      this.recover();
+    }
+  }
+
+  onLossOfAcquiredImmunity() {
+    this.makeSusceptible();
+  }
+}
+
+function randomIntWithRange(from, Range) {
+  return floor(random(from, from + Range));
+}
+
+function occurs(probability) {
+  return random(0, 1) < probability;
 }
