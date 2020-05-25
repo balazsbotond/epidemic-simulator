@@ -1,4 +1,4 @@
-// a legend for the chart that displays constantly updating values
+// a chart legend that displays constantly updating values
 class Legend {
 
   // x - x coordinate of top left corner
