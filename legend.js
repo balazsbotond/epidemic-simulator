@@ -15,7 +15,7 @@ class Legend {
     this.recth = 10;
     this.labels = labels;
   }
-  
+
   // values - array of current values for the labels
   draw(values) {
     push();
@@ -24,9 +24,9 @@ class Legend {
     rect(this.x, this.y, this.width, this.height);
     textSize(12);
     textFont('Arial');
-    
+
     let offset = 0, lineHeight = 20, i = 0;
-    
+
     for (const item of this.labels) {
       stroke(200);
       strokeWeight(1);
