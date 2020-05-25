@@ -9,7 +9,6 @@ const xmin = 0;
 const xmax = w;
 const ymin = 0;
 const ymax = h - chartHeight;
-const bgcolor = '#1c2321';
 
 let running = false;
 let balls = [];
